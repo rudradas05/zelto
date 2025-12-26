@@ -19,6 +19,37 @@ export default function SignUp() {
 
   const formValidation = name !== "" && email !== "" && password !== "";
 
+  // const handleRegister = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!formValidation || isLoading) return;
+
+  //   try {
+  //     setIsLoading(true);
+
+  //     await axios.post("/api/auth/register", {
+  //       name,
+  //       email,
+  //       password,
+  //     });
+
+  //     // ✅ SUCCESS TOAST
+  //     toast.success("Account created successfully!");
+
+  //     // ✅ CLEAR FIELDS
+  //     setName("");
+  //     setEmail("");
+  //     setPassword("");
+  //     setShowPassword(false);
+
+  //     // optional redirect
+  //     // router.push("/sign-in");
+  //   } catch (error: any) {
+  //     toast.error(error?.response?.data?.message || "Something went wrong");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formValidation || isLoading) return;
@@ -26,23 +57,27 @@ export default function SignUp() {
     try {
       setIsLoading(true);
 
+      // 1️⃣ Register
       await axios.post("/api/auth/register", {
         name,
         email,
         password,
       });
 
-      // ✅ SUCCESS TOAST
+      // 2️⃣ Auto sign-in
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        toast.error(res.error);
+        return;
+      }
+
       toast.success("Account created successfully!");
-
-      // ✅ CLEAR FIELDS
-      setName("");
-      setEmail("");
-      setPassword("");
-      setShowPassword(false);
-
-      // optional redirect
-      // router.push("/sign-in");
+      router.push("/"); // ✅ HOME
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
