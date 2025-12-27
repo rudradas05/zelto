@@ -77,7 +77,7 @@ export default function SignUp() {
       }
 
       toast.success("Account created successfully!");
-      router.push("/"); // ✅ HOME
+      router.push("/"); 
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     } finally {
@@ -198,7 +198,7 @@ export default function SignUp() {
             className="flex w-full items-center justify-center gap-3 rounded-xl
             border border-gray-300 py-3 text-sm font-medium text-gray-700
             hover:bg-gray-100 transition shadow-sm cursor-pointer"
-            onClick={() => signIn("google")}
+            onClick={() => signIn("google", { callbackUrl: "/" })}
           >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"

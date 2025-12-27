@@ -1,67 +1,53 @@
-"use client";
+// import { auth } from "@/auth";
 
-import { useEffect, useState } from "react";
-import { AnimatePresence } from "motion/react";
-import WelcomePage from "@/components/Welcome";
+// import User from "@/models/userModel";
+// import ProfileGate from "@/components/ProfileGate";
+// import HomeClient from "@/components/HomeClient";
 
+// export default async function Home() {
+//   const session = await auth();
 
+//   if (!session?.user?.id) {
+//     return <HomeClient isLoggedIn={false} />;
+//   }
 
-// 🔁 Replace with your real auth hook
-const useAuth = () => {
-  return { isLoggedIn: false }; 
-};
+//   const user = await User.findById(session.user.id).lean();
 
-export default function Home() {
-  const { isLoggedIn } = useAuth();
+//   const isIncomplete = !user?.mobile || !user?.role;
 
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [ready, setReady] = useState(false);
+//   return (
+//     <ProfileGate isIncomplete={isIncomplete}>
+//       <HomeClient isLoggedIn={true} />
+//     </ProfileGate>
+//   );
+// }
 
-  useEffect(() => {
-    const hasSeen = sessionStorage.getItem("zelto_welcome_seen");
+import { auth } from "@/auth";
+import User from "@/models/userModel";
+import ProfileGate from "@/components/ProfileGate";
+import HomeClient from "@/components/HomeClient";
 
-    
-    if (hasSeen || isLoggedIn) {
-      setShowWelcome(false);
-    } else {
-      setShowWelcome(true);
-    }
+export default async function Home() {
+  const session = await auth();
 
-    setReady(true);
-  }, [isLoggedIn]);
+  // 🔓 Not logged in
+  if (!session?.user?.id) {
+    return <HomeClient isLoggedIn={false} />;
+  }
 
-  const finishWelcome = () => {
-    sessionStorage.setItem("zelto_welcome_seen", "true");
+  const user = await User.findById(session.user.id).lean();
 
-    // 📊 Analytics
-    window.dispatchEvent(
-      new CustomEvent("zelto:welcome_completed", {
-        detail: { timestamp: Date.now() },
-      })
-    );
+  // 🚨 Edge case: session exists but user missing
+  if (!user) {
+    return <HomeClient isLoggedIn={false} />;
+  }
 
-    setShowWelcome(false);
-  };
-
-  if (!ready) return null;
+  // ✅ Profile completion = mobile only
+  const isIncomplete = !user.mobile;
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {showWelcome && (
-          <WelcomePage key="welcome" onFinish={finishWelcome} />
-        )}
-      </AnimatePresence>
-
-      {!showWelcome && (
-        <>
-          {/* <Navbar />
-          <HeroSection />
-          <TopProducts />
-          <UserExperience />
-          <Footer /> */}
-        </>
-      )}
-    </>
+    <ProfileGate isIncomplete={isIncomplete}>
+      <HomeClient isLoggedIn />
+    </ProfileGate>
   );
 }
