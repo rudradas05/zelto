@@ -11,7 +11,7 @@ export async function proxy(req: NextRequest) {
 
   const session = await auth();
 
-  const publicRoutes = ["/", "/sign-in", "/sign-up"];
+  const publicRoutes = ["/", "/sign-in", "/sign-up", "/cart"];
 
   // 2️⃣ Logged-in users should not see auth pages
   if (session && (pathname === "/sign-in" || pathname === "/sign-up")) {

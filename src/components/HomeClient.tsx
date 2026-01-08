@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence } from "framer-motion";
 import WelcomePage from "@/components/Welcome";
 
 interface Props {
   isLoggedIn: boolean;
+  children: React.ReactNode;
 }
 
-export default function HomeClient({ isLoggedIn }: Props) {
-  const [showWelcome, setShowWelcome] = useState(false);
-  const [ready, setReady] = useState(false);
-  
+export default function HomeClient({ isLoggedIn, children }: Props) {
+  const [showWelcome, setShowWelcome] = useState<boolean | null>(null);
 
   useEffect(() => {
     const hasSeen = sessionStorage.getItem("zelto_welcome_seen");
@@ -21,8 +20,6 @@ export default function HomeClient({ isLoggedIn }: Props) {
     } else {
       setShowWelcome(true);
     }
-
-    setReady(true);
   }, [isLoggedIn]);
 
   const finishWelcome = () => {
@@ -30,23 +27,18 @@ export default function HomeClient({ isLoggedIn }: Props) {
     setShowWelcome(false);
   };
 
-  if (!ready) return null;
+  // Controlled initial state (no blank screen)
+  if (showWelcome === null) {
+    return <div className="min-h-screen bg-white" />;
+  }
 
   return (
     <>
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {showWelcome && <WelcomePage key="welcome" onFinish={finishWelcome} />}
       </AnimatePresence>
 
-      {!showWelcome && (
-        <>
-          {/* <Navbar />
-          <HeroSection />
-          <TopProducts />
-          <UserExperience />
-          <Footer /> */}
-        </>
-      )}
+      {!showWelcome && children}
     </>
   );
 }

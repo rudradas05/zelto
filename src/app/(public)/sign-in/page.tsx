@@ -1,74 +1,34 @@
 "use client";
 
-import { Mail, User, Lock, ArrowLeft, EyeOff, Eye } from "lucide-react";
+import { Mail, Lock, ArrowLeft, EyeOff, Eye } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
-import axios from "axios";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-export default function SignUp() {
+export default function SignIn() {
   const router = useRouter();
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
-  const formValidation = name !== "" && email !== "" && password !== "";
+  const formValidation = email !== "" && password !== "";
 
-  // const handleRegister = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!formValidation || isLoading) return;
-
-  //   try {
-  //     setIsLoading(true);
-
-  //     await axios.post("/api/auth/register", {
-  //       name,
-  //       email,
-  //       password,
-  //     });
-
-  //     // ✅ SUCCESS TOAST
-  //     toast.success("Account created successfully!");
-
-  //     // ✅ CLEAR FIELDS
-  //     setName("");
-  //     setEmail("");
-  //     setPassword("");
-  //     setShowPassword(false);
-
-  //     // optional redirect
-  //     // router.push("/sign-in");
-  //   } catch (error: any) {
-  //     toast.error(error?.response?.data?.message || "Something went wrong");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  const handleRegister = async (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formValidation || isLoading) return;
 
     try {
       setIsLoading(true);
 
-      // 1️⃣ Register
-      await axios.post("/api/auth/register", {
-        name,
-        email,
-        password,
-      });
-
-      // 2️⃣ Auto sign-in
       const res = await signIn("credentials", {
         email,
         password,
-        redirect: false,
+        redirect: false, // 🔥 IMPORTANT
       });
 
       if (res?.error) {
@@ -76,10 +36,10 @@ export default function SignUp() {
         return;
       }
 
-      toast.success("Account created successfully!");
-      router.push("/"); 
-    } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      toast.success("Signed in successfully!");
+      router.push("/"); // ✅ HOME PAGE
+    } catch {
+      toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -111,26 +71,15 @@ export default function SignUp() {
           {/* Header */}
           <div className="mb-10 text-center">
             <h1 className="text-4xl font-semibold tracking-tight text-gray-900">
-              Create account
+              Welcome back
             </h1>
-            <p className="mt-3 text-[15px] text-gray-500">Join Zelto today</p>
+            <p className="mt-3 text-[15px] text-gray-500">
+              Sign in to continue to Zelto
+            </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleRegister} className="space-y-7">
-            {/* Name */}
-            <div className="relative">
-              <User className="absolute left-0 top-3 h-5 w-5 text-gray-400" />
-              <input
-                className="w-full border-b border-gray-300 bg-transparent py-3 pl-8 pr-2
-                text-gray-900 placeholder-gray-400 focus:border-green-600
-                focus:outline-none transition-all duration-200"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-
+          <form onSubmit={handleSignIn} className="space-y-7">
             {/* Email */}
             <div className="relative">
               <Mail className="absolute left-0 top-3 h-5 w-5 text-gray-400" />
@@ -179,7 +128,7 @@ export default function SignUp() {
                     : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
                 }`}
             >
-              {isLoading ? "Creating account..." : "Create account"}
+              {isLoading ? "Signing in..." : "Sign in"}
             </motion.button>
           </form>
 
@@ -192,13 +141,27 @@ export default function SignUp() {
           </div>
 
           {/* Google */}
-          <motion.button
+          {/* <motion.button
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
             className="flex w-full items-center justify-center gap-3 rounded-xl
             border border-gray-300 py-3 text-sm font-medium text-gray-700
             hover:bg-gray-100 transition shadow-sm cursor-pointer"
             onClick={() => signIn("google", { callbackUrl: "/" })}
+          > */}
+          <motion.button
+            disabled={oauthLoading}
+            onClick={() => {
+              setOauthLoading(true);
+              signIn("google", { callbackUrl: "/" });
+            }}
+            className={`flex w-full items-center justify-center gap-3 rounded-xl
+    border py-3 text-sm font-medium transition
+    ${
+      oauthLoading
+        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+        : "border-gray-300 text-gray-700 hover:bg-gray-100"
+    }`}
           >
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -210,12 +173,12 @@ export default function SignUp() {
 
           {/* Footer */}
           <p className="mt-10 text-center text-sm text-gray-500">
-            Already have an account?{" "}
+            Don’t have an account?{" "}
             <button
-              onClick={() => router.push("/sign-in")}
+              onClick={() => router.push("/sign-up")}
               className="text-green-600 hover:text-green-700 font-semibold transition cursor-pointer"
             >
-              Sign in
+              Sign up
             </button>
           </p>
         </motion.div>
